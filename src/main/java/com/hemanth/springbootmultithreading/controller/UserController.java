@@ -1,5 +1,6 @@
 package com.hemanth.springbootmultithreading.controller;
 
+import com.hemanth.springbootmultithreading.entity.User;
 import com.hemanth.springbootmultithreading.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -32,5 +34,17 @@ public class UserController {
     @GetMapping(value = "/users", produces = "application/json")
     public CompletableFuture<ResponseEntity> findAllUsers() {
         return userService.findAllUsers().thenApply(ResponseEntity::ok);
+    }
+
+    @GetMapping(value = "/users-by-multi-thread", produces = "application/json")
+    public ResponseEntity getUsers() {
+        CompletableFuture<List<User>> users1 = userService.findAllUsers();
+        CompletableFuture<List<User>> users2 = userService.findAllUsers();
+        CompletableFuture<List<User>> users3 = userService.findAllUsers();
+
+        CompletableFuture.allOf(users1, users2, users3).join();
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+
     }
 }
